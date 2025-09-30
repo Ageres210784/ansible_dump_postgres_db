@@ -1,0 +1,25 @@
+---
+database_name: database
+inform_system: is
+pg_password: pg_password
+pg_user: postgres
+pg_version: latest
+remote_db_address: "127.0.0.1"
+remote_db_port: "5432"
+tmp_container_name: tmp-postgres-backup
+db_base_path: "{{ '/var/backups/' + inform_system + '/Full/' + database_name }}"
+pg_bash_exec: "{{ '/usr/bin/docker run -t --rm --name ' + tmp_container_name + ' postgres:' + pg_version + ' bash -c' }}"
+
+dump_postgres_databases:
+  - database_name: "{{ database_name }}"
+
+# Example
+# dump_postgres_databases:
+#   - database_name: database
+#     inform_system: is
+#     pg_password: pg_password
+#     pg_user: postgres
+#     remote_db_address: "127.0.0.1"
+#     remote_db_port: "5432"
+#     db_base_path: "/path/for/backup"
+#     pg_bash_exec: "bash -c"

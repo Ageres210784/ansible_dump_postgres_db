@@ -1,0 +1,8 @@
+---
+- name: Ensure script and cron job
+  include_tasks:
+    file: install-script.yml
+  loop: "{{ dump_postgres_databases }}"
+  loop_control:
+    extended: true
+    extended_allitems: false

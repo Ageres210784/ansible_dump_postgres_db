@@ -1,0 +1,35 @@
+- name: Ensure default db_conf
+  ansible.builtin.set_fact:
+    db_conf_default:
+      - database_name: "{{ database_name }}"
+        inform_system: "{{ inform_system }}"
+        pg_password: "{{ pg_password }}"
+        pg_user: "{{ pg_user }}"
+        remote_db_address: "{{ remote_db_address }}"
+        remote_db_port: "{{ remote_db_port }}"
+        db_base_path: "{{ db_base_path }}"
+        pg_bash_exec: "{{ pg_bash_exec }}"
+
+- name: Combine default
+  ansible.builtin.set_fact:
+    db_conf: "{{ db_conf_default | combine(item) }}"
+
+- name: Creating a script for backup
+  ansible.builtin.template:
+    src: script.sh.j2
+    dest: "/root/backup_{{ db_conf.database_name }}.sh"
+    mode: '0700'
+
+- name: Set daily cron-job with backup
+  ansible.builtin.cron:
+    name: "Backup database {{ db_conf.database_name }}"
+    minute: "0"
+    hour: "{{ ansible_loop.index0 }}"
+    job: "/root/backup_{{ db_conf.database_name }}.sh 2>&1 >> /var/log/backup_db_{{ db_conf.database_name }}.log"
+
+- name: Explicitly run backup script
+  ansible.builtin.shell:
+    cmd: "/root/backup_{{ db_conf.database_name }}.sh"
+  tags:
+    - never
+    - backup

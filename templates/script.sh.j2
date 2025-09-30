@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo "Starting backup"
+DB_BASE_PATH={{ db_conf.db_base_path }}
+DB_DATE=$(date +%Y-%m-%d)
+DB_FULL_NAME=${DB_BASE_PATH}/{{ db_conf.inform_system }}-{{ db_conf.database_name }}-${DB_DATE}
+echo "Ensure dirs"
+mkdir -p $DB_BASE_PATH
+echo "Create backup with db full name ${DB_FULL_NAME}.tar.gz"
+{{ db_conf.pg_bash_exec }} 'PGPASSWORD={{ db_conf.pg_password }} pg_dump -Fp -d {{ db_conf.database_name }} -h {{ db_conf.remote_db_address }} -p {{ db_conf.remote_db_port }} -U {{ db_conf.pg_user }}' | gzip > $DB_FULL_NAME.tar.gz
+echo "Create hash with db full name ${DB_FULL_NAME}.tar.gz and hash name ${DB_FULL_NAME}.hash"
+echo $(sha1sum $DB_FULL_NAME.tar.gz | cut -d' ' -f1) > $DB_FULL_NAME.hash
+echo "End backup"
